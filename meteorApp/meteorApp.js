@@ -14,10 +14,44 @@ if (Meteor.isClient) {
       Session.set('counter', Session.get('counter') + 1);
     }
   });
+
+  Template.login.events({
+      'click #facebook-login': function(event) {
+          Meteor.loginWithFacebook({}, function(err){
+              if (err) {
+                  throw new Meteor.Error("Facebook login failed");
+              }
+          });
+      },
+
+      'click #logout': function(event) {
+          Meteor.logout(function(err){
+              if (err) {
+                  throw new Meteor.Error("Logout failed");
+              }
+          })
+      }
+  });
 }
 
 if (Meteor.isServer) {
-  Meteor.startup(function () {
-    // code to run on server at startup
-  });
+  Meteor.startup(function() {
+    ServiceConfiguration.configurations.remove({
+      service: "facebook"
+    });
+    ServiceConfiguration.configurations.insert({
+      service: "facebook",
+      appId: Meteor.settings.public.facebook.AppID,
+      loginStyle: "popup",
+      secret: Meteor.settings.facebook.AppSecret
+    });
+  })
+
+  // Accounts.onCreateUser(function(options, user) {
+  //     if (options.profile) {
+  //         options.profile.picture = "http://graph.facebook.com/" + user.services.facebook.id + "/picture/?type=large";
+  //         user.profile = options.profile;
+  //     }
+  //     return user;
+  // });
 }
